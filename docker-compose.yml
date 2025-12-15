@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=deepr
+      - POSTGRES_PASSWORD=deepr_password
+      - POSTGRES_DB=deepr_db
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./deepr/backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://deepr:deepr_password@db/deepr_db
+      - SECRET_KEY=change_this_secret_in_prod
+      - CODEBASE_SECRET=fixed_secret_for_encryption
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build: ./deepr/frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
