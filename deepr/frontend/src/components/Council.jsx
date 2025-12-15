@@ -7,15 +7,15 @@ const MODELS = [
   // Future/Requested
   { id: "openai/gpt-5.2", name: "GPT-5.2", desc: "OpenAI Flagship" },
   { id: "anthropic/claude-4.5-opus", name: "Claude 4.5 Opus", desc: "Anthropic Flagship" },
-  { id: "google/gemini-3-pro", name: "Gemini 3 Pro", desc: "Google Flagship" },
+  { id: "google/gemini-3-pro-preview", name: "Gemini 3 Pro", desc: "Google Flagship" },
   // Real/Prior
   { id: "openai/gpt-4o", name: "GPT-4o", desc: "Prior Flagship" },
   { id: "anthropic/claude-3-opus", name: "Claude 3 Opus", desc: "Prior Flagship" },
   { id: "google/gemini-1.5-pro", name: "Gemini 1.5 Pro", desc: "Prior Flagship" },
   // Others
   { id: "meta-llama/llama-3-70b-instruct", name: "Llama 3 70B", desc: "Meta Flagship" },
-  { id: "deepseek/deepseek-coder", name: "DeepSeek Coder", desc: "Coding Specialist" },
-  { id: "x-ai/grok-1", name: "Grok", desc: "xAI Flagship" },
+  { id: "deepseek/deepseek-v3.2", name: "DeepSeek v3.2", desc: "Deepseek Flagship"},
+  { id: "x-ai/grok-4", name: "Grok 4", desc: "xAI Flagship" },
   { id: "openai/gpt-3.5-turbo", name: "GPT-3.5 Turbo", desc: "Fast & Efficient" },
   { id: "anthropic/claude-3-haiku", name: "Claude 3 Haiku", desc: "Speed Optimized" },
 ];

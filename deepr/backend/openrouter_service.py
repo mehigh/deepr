@@ -9,8 +9,9 @@ AVAILABLE_MODELS = [
     # Curren Flagship
     {"id": "openai/gpt-5.2", "name": "GPT-5.2", "description": "OpenAI Flagship"},
     {"id": "anthropic/claude-opus-4.5", "name": "Claude 4.5 Opus", "description": "Anthropic Flagship"},
-    {"id": "ggoogle/gemini-3-pro-preview", "name": "Gemini 3 Pro", "description": "Google Flagship"},
-    {"id": "x-ai/grok-4", "name": "Grok", "description": "xAI Flagship"},
+    {"id": "google/gemini-3-pro-preview", "name": "Gemini 3 Pro", "description": "Google Flagship"},
+    {"id": "x-ai/grok-4", "name": "Grok 4", "description": "xAI Flagship"},
+    {"id": "deepseek/deepseek-v3.2", "name": "DeepSeek v3.2", "description": "Deepseek Flagship"},
     
     # Prior Flagships
     {"id": "openai/gpt-4o", "name": "GPT-4o", "description": "Prior Flagship"},
@@ -22,7 +23,6 @@ AVAILABLE_MODELS = [
     {"id": "anthropic/claude-3-haiku", "name": "Claude 3 Haiku", "description": "Speed Optimized"},
     {"id": "google/gemini-1.5-flash", "name": "Gemini 1.5 Flash", "description": "Google Fast"},
     {"id": "meta-llama/llama-3-70b-instruct", "name": "Llama 3 70B", "description": "Meta Flagship"},
-    {"id": "deepseek/deepseek-coder", "name": "DeepSeek Coder", "description": "Coding Specialist"},
 ]
 
 class OpenRouterClient:
