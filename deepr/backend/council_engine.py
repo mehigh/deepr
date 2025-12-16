@@ -164,4 +164,61 @@ class CouncilEngine:
         # Link synthesis to the Plan (or maybe the root?)
         return await self.create_node(conversation_id, plan_node.id, NodeType.SYNTHESIS, content, model_name=chairman_model)
 
+    async def run_ensemble_research(self, conversation_id: int, root_node: Node, council_models: List[str]) -> List[Node]:
+        """
+        Parallel research for Ensemble method.
+        Directly asks the prompt to all models without a plan.
+        """
+        prompt = f"""
+        You are a Model in an ensemble.
+        The user has asked: "{root_node.content}"
+
+        Please answer this question comprehensively from your perspective.
+        """
+
+        tasks = []
+        for model in council_models:
+            tasks.append(self._fetch_research(model, prompt))
+
+        results = await asyncio.gather(*tasks)
+
+        nodes = []
+        for model, content in results:
+            node = await self.create_node(conversation_id, root_node.id, NodeType.RESEARCH, content, model_name=model)
+            nodes.append(node)
+
+        return nodes
+
+    async def run_ensemble_synthesis(self, conversation_id: int, root_node: Node, research_nodes: List[Node], chairman_model: str) -> Node:
+        """
+        Synthesizes anonymized responses from the ensemble.
+        """
+        context = f"User Question: {root_node.content}\n\n"
+
+        # Anonymize
+        for i, node in enumerate(research_nodes):
+            # Using Greek letters or just "Agent Alpha/Beta/Gamma"
+            # Let's use simple numeric or Alpha labels
+            label = f"Agent {i+1}"
+            context += f"--- Response from {label} ---\n{node.content}\n\n"
+
+        prompt = f"""
+        You are the Synthesizer. You have received responses from multiple AI agents (anonymized as Agent 1, Agent 2, etc.).
+
+        Your task:
+        1. Analyze the responses for consensus and conflict.
+        2. Synthesize a single, unified, high-quality response.
+        3. Avoid bias towards any specific style.
+        4. If you use a specific idea that was unique to one agent, credit them (e.g., "As suggested by Agent 3...").
+        """
+
+        response = await self.client.chat_completion(
+            model=chairman_model,
+            messages=[{"role": "user", "content": context}, {"role": "user", "content": prompt}]
+        )
+        content = response.choices[0].message.content
+
+        # Link to root node since there is no plan node
+        return await self.create_node(conversation_id, root_node.id, NodeType.SYNTHESIS, content, model_name=chairman_model)
+
 # Global helper to reconstruct the engine context (ugly hack for streaming via global refs if needed, but better to pass dependencies)

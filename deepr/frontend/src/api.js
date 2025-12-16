@@ -45,7 +45,7 @@ export const getConversation = async (id) => {
   return response.data;
 };
 
-export const streamCouncil = (prompt, councilMembers, chairmanModel, onEvent) => {
+export const streamCouncil = (prompt, councilMembers, chairmanModel, method, onEvent) => {
   const token = localStorage.getItem('token');
   
   // Use fetch for streaming body support if possible, or just standard SSE endpoint
@@ -60,7 +60,8 @@ export const streamCouncil = (prompt, councilMembers, chairmanModel, onEvent) =>
     body: JSON.stringify({
       prompt,
       council_members: councilMembers,
-      chairman_model: chairmanModel
+      chairman_model: chairmanModel,
+      method: method
     })
   }).then(async response => {
     if (!response.ok) {

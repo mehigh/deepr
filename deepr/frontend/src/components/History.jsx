@@ -42,6 +42,10 @@ const History = () => {
                   {conv.title || "Untitled Research"}
                 </h3>
                 <div className="flex items-center text-xs text-slate-500 mt-1 space-x-2">
+                   <span className={`px-1.5 py-0.5 rounded ${conv.method === 'ensemble' ? 'bg-purple-900 text-purple-200' : 'bg-blue-900 text-blue-200'}`}>
+                      {conv.method === 'ensemble' ? 'Ensemble' : 'DAG'}
+                   </span>
+                   <span>•</span>
                    <span>{new Date(conv.created_at).toLocaleDateString()}</span>
                    <span>•</span>
                    <span>{new Date(conv.created_at).toLocaleTimeString()}</span>

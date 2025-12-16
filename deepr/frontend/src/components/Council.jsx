@@ -24,6 +24,7 @@ const Council = () => {
   const [prompt, setPrompt] = useState('');
   const [selectedModels, setSelectedModels] = useState(['openai/gpt-4o', 'anthropic/claude-3-opus']);
   const [chairman, setChairman] = useState('openai/gpt-4o');
+  const [method, setMethod] = useState('dag'); // dag or ensemble
   const [isResearching, setIsResearching] = useState(false);
   const [nodes, setNodes] = useState([]);
   const [status, setStatus] = useState('');
@@ -43,7 +44,7 @@ const Council = () => {
     // Add User Node locally for visuals (though backend does it too)
     // setNodes([{ type: 'root', content: prompt, id: 'root' }]);
 
-    streamCouncil(prompt, selectedModels, chairman, (event) => {
+    streamCouncil(prompt, selectedModels, chairman, method, (event) => {
       if (event.type === 'status') {
         setStatus(event.message);
       } else if (event.type === 'node') {
@@ -65,7 +66,7 @@ const Council = () => {
         <div className="space-y-8 animate-fade-in">
           <div>
             <h2 className="text-2xl font-bold mb-4">Research Prompt</h2>
-            <div className="relative">
+            <div className="relative mb-4">
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -76,6 +77,32 @@ const Council = () => {
                 <button className="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-slate-300">Web Frameworks</button>
                 <button className="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-slate-300">API Security</button>
               </div>
+            </div>
+
+            {/* Method Selection */}
+            <div className="flex space-x-6">
+               <label className="flex items-center space-x-2 cursor-pointer">
+                 <input
+                   type="radio"
+                   name="method"
+                   value="dag"
+                   checked={method === 'dag'}
+                   onChange={() => setMethod('dag')}
+                   className="form-radio text-blue-600 bg-slate-800 border-slate-700 focus:ring-blue-500"
+                 />
+                 <span>AI Council (DAG)</span>
+               </label>
+               <label className="flex items-center space-x-2 cursor-pointer">
+                 <input
+                   type="radio"
+                   name="method"
+                   value="ensemble"
+                   checked={method === 'ensemble'}
+                   onChange={() => setMethod('ensemble')}
+                   className="form-radio text-blue-600 bg-slate-800 border-slate-700 focus:ring-blue-500"
+                 />
+                 <span>Ensemble</span>
+               </label>
             </div>
           </div>
 

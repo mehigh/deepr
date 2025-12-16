@@ -36,9 +36,14 @@ const HistoryDetail = () => {
 
       <div className="mb-8 border-b border-slate-800 pb-4">
         <h1 className="text-2xl font-bold text-white mb-2">{conversation.title}</h1>
-        <p className="text-xs text-slate-500">
-           Started on {new Date(conversation.created_at).toLocaleString()}
-        </p>
+        <div className="flex items-center space-x-2">
+            <span className={`text-xs px-2 py-1 rounded ${conversation.method === 'ensemble' ? 'bg-purple-900 text-purple-200' : 'bg-blue-900 text-blue-200'}`}>
+                {conversation.method === 'ensemble' ? 'Ensemble' : 'AI Council (DAG)'}
+            </span>
+            <p className="text-xs text-slate-500">
+            Started on {new Date(conversation.created_at).toLocaleString()}
+            </p>
+        </div>
       </div>
 
       <NodeTree nodes={nodes} status="done" />
