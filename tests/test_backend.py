@@ -58,7 +58,10 @@ async def auth_token(client, db_session):
 
     # Add settings with API key
     import os
-    api_key = os.getenv("OPENROUTER_API_KEY", "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")
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        pytest.fail("OPENROUTER_API_KEY environment variable not set")
+
     encrypted_key = encrypt_key(api_key, user.id)
     settings = UserSettings(user_id=user.id, encrypted_api_key=encrypted_key)
     db_session.add(settings)
