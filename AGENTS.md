@@ -27,16 +27,20 @@ These agents are used in the standard `DAG` and `Ensemble` workflows.
 
 ## Diagnostic Orchestration (DxO) Agents
 
-The DxO workflow uses a more flexible, role-based panel approach.
+The DxO workflow uses a more flexible, role-based panel approach. The system dynamically executes all roles defined in the panel.
 
-### 1. Lead Researcher
+### 1. Lead Researcher (Proposer)
 - **Focus:** Primary analysis and synthesis.
-- **Goal:** Conduct thorough research analysis and identify key findings and patterns.
+- **Role in Workflow:** Drafts the initial proposal and refines it based on feedback from the Council.
+- **Identity:** The first role defined in the panel, or explicitly named "Lead Researcher/Architect".
 
-### 2. Critical Reviewer
-- **Focus:** Evaluation and Falsification.
-- **Goal:** Identify gaps, weaknesses, and methodological issues in the proposed arguments.
+### 2. The Council (Reviewers)
+- **Focus:** Multi-perspective feedback.
+- **Role in Workflow:** All other roles defined in the panel act as reviewers. They analyze the proposal in parallel.
+- **Specializations:**
+    - **Critical Reviewer:** If a role is named "Critical Reviewer", it performs a scored critique (Confidence Score).
+    - **QA / Quality Assurance:** If a role is named "QA" or "Quality", it generates specific Test Cases instead of a general critique.
+    - **Domain Experts:** Any other custom roles (e.g., "Legal", "Security", "UX") generate standard critiques based on their specific system instructions.
 
-### 3. Domain Expert
-- **Focus:** Specialized Context.
-- **Goal:** Provide deep, field-specific knowledge that generalist models might miss.
+### 3. Loop Execution
+- The process iterates (Draft -> Review -> Refine) up to 3 times or until the "Critical Reviewer" assigns a confidence score >= 85%.

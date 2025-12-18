@@ -27,18 +27,11 @@ The easiest way to run DeepR is with Docker Compose.
 
 ## Development Setup
 
-### Backend (Python/FastAPI)
+For detailed instructions on running the environment with hot-reloading, please see [DEVELOPMENT.md](DEVELOPMENT.md).
 
-1.  Navigate to `deepr/backend`.
-2.  Create a venv: `python -m venv venv && source venv/bin/activate`.
-3.  Install deps: `pip install -r requirements.txt`.
-4.  Run: `uvicorn main:app --reload`.
-
-### Frontend (React/Vite)
-
-1.  Navigate to `deepr/frontend`.
-2.  Install deps: `npm install`.
-3.  Run: `npm run dev`.
+### Quick Summary
+1.  **Run:** `docker compose up --build`
+2.  **Edit:** Changes to frontend or backend files are applied instantly.
 
 ## Configuration
 
