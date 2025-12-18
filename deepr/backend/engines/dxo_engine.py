@@ -25,7 +25,7 @@ class DxOEngine:
         await self.db.refresh(node)
         return node
 
-    async def run_dxo_pipeline(self, conversation_id: int, root_node: Node, roles: List[Dict]):
+    async def run_dxo_pipeline(self, conversation_id: int, root_node: Node, roles: List[Dict], max_iterations: int = 3):
         """
         Orchestrates the DxO workflow:
         Phase A: Proposal (Lead System Architect)
@@ -78,7 +78,7 @@ class DxOEngine:
 
         # Loop
         iteration = 0
-        max_iterations = 3
+        # max_iterations used from arg
         confidence_score = 0
 
         while iteration < max_iterations and confidence_score < 85:

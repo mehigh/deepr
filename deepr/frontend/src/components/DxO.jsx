@@ -44,6 +44,7 @@ const DxO = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [nodes, setNodes] = useState([]);
   const [status, setStatus] = useState('');
+  const [maxIterations, setMaxIterations] = useState(3);
 
   const addRole = () => {
     setRoles([...roles, {
@@ -91,7 +92,7 @@ const DxO = () => {
         setStatus('Error: ' + event.message);
         setIsRunning(false);
       }
-    }, rolesPayload);
+    }, rolesPayload, maxIterations);
   };
 
   return (
@@ -114,12 +115,25 @@ const DxO = () => {
                 <h3 className="text-xl font-bold">Role Assignments</h3>
                 <p className="text-slate-400 text-sm">Assign AI models to specialized roles. Each role brings a unique perspective.</p>
               </div>
-              <button
-                onClick={addRole}
-                className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-sm transition"
-              >
-                <Plus size={16} className="mr-2" /> Add Role
-              </button>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 bg-slate-800 rounded-lg px-3 py-1 border border-slate-700">
+                  <span className="text-xs text-slate-400">Max Iterations:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={maxIterations}
+                    onChange={(e) => setMaxIterations(parseInt(e.target.value))}
+                    className="w-12 bg-transparent text-sm text-center focus:outline-none text-white appearance-none"
+                  />
+                </div>
+                <button
+                  onClick={addRole}
+                  className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-sm transition"
+                >
+                  <Plus size={16} className="mr-2" /> Add Role
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4">

@@ -62,6 +62,7 @@ class CouncilRunRequest(BaseModel):
     chairman_model: str = "openai/gpt-4o"
     method: str = "dag" # dag, ensemble, or dxo
     roles: List[dict] = [] # List of {name, model, instructions}
+    max_iterations: int = 5 # Default max loops for DxO
 
 @router.post("/council/run")
 async def run_council(
@@ -120,7 +121,7 @@ async def run_council(
             elif request.method == "dxo":
                 dxo_engine = DxOEngine(db, current_user, client)
                 yield f"data: {json.dumps({'type': 'status', 'message': 'Initializing DxO Virtual Panel...'})}\n\n"
-                async for event in dxo_engine.run_dxo_pipeline(conversation.id, root_node, request.roles):
+                async for event in dxo_engine.run_dxo_pipeline(conversation.id, root_node, request.roles, max_iterations=request.max_iterations):
                     yield f"data: {event}\n\n"
 
             else:
