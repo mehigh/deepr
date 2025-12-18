@@ -148,7 +148,10 @@ class DxOEngine:
                 # Create Node
                 # We use 'critique' type for general reviewers so frontend renders them in the critique list
                 # We use 'test_cases' for QA
-                new_node = await self.create_node(conversation_id, draft_node.id, node_type, content, model_name=role['model'])
+                # Pass the Role Name as the "model_name" so the frontend displays "Critical Reviewer" 
+                # instead of just the raw model string.
+                display_name = f"{role['name']} ({role['model']})"
+                new_node = await self.create_node(conversation_id, draft_node.id, node_type, content, model_name=display_name)
                 
                 return {
                     'role': role['name'],
