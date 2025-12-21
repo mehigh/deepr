@@ -11,10 +11,10 @@ const MODELS = [
   // Real/Prior
   { id: "openai/gpt-4o", name: "GPT-4o", desc: "Prior Flagship" },
   { id: "anthropic/claude-3-opus", name: "Claude 3 Opus", desc: "Prior Flagship" },
-  { id: "google/gemini-1.5-pro", name: "Gemini 1.5 Pro", desc: "Prior Flagship" },
+  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", desc: "Prior Flagship" },
   // Others
   { id: "meta-llama/llama-3-70b-instruct", name: "Llama 3 70B", desc: "Meta Flagship" },
-  { id: "deepseek/deepseek-v3.2", name: "DeepSeek v3.2", desc: "Deepseek Flagship"},
+  { id: "deepseek/deepseek-v3.2", name: "DeepSeek v3.2", desc: "Deepseek Flagship" },
   { id: "x-ai/grok-4", name: "Grok 4", desc: "xAI Flagship" },
   { id: "openai/gpt-3.5-turbo", name: "GPT-3.5 Turbo", desc: "Fast & Efficient" },
   { id: "anthropic/claude-3-haiku", name: "Claude 3 Haiku", desc: "Speed Optimized" },
@@ -81,28 +81,28 @@ const Council = () => {
 
             {/* Method Selection */}
             <div className="flex space-x-6">
-               <label className="flex items-center space-x-2 cursor-pointer">
-                 <input
-                   type="radio"
-                   name="method"
-                   value="dag"
-                   checked={method === 'dag'}
-                   onChange={() => setMethod('dag')}
-                   className="form-radio text-blue-600 bg-slate-800 border-slate-700 focus:ring-blue-500"
-                 />
-                 <span>AI Council (DAG)</span>
-               </label>
-               <label className="flex items-center space-x-2 cursor-pointer">
-                 <input
-                   type="radio"
-                   name="method"
-                   value="ensemble"
-                   checked={method === 'ensemble'}
-                   onChange={() => setMethod('ensemble')}
-                   className="form-radio text-blue-600 bg-slate-800 border-slate-700 focus:ring-blue-500"
-                 />
-                 <span>Ensemble</span>
-               </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="method"
+                  value="dag"
+                  checked={method === 'dag'}
+                  onChange={() => setMethod('dag')}
+                  className="form-radio text-blue-600 bg-slate-800 border-slate-700 focus:ring-blue-500"
+                />
+                <span>AI Council (DAG)</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="method"
+                  value="ensemble"
+                  checked={method === 'ensemble'}
+                  onChange={() => setMethod('ensemble')}
+                  className="form-radio text-blue-600 bg-slate-800 border-slate-700 focus:ring-blue-500"
+                />
+                <span>Ensemble</span>
+              </label>
             </div>
           </div>
 
@@ -117,15 +117,13 @@ const Council = () => {
                 <div
                   key={model.id}
                   onClick={() => toggleModel(model.id)}
-                  className={`cursor-pointer p-4 rounded-lg border flex items-start space-x-3 transition ${
-                    selectedModels.includes(model.id)
+                  className={`cursor-pointer p-4 rounded-lg border flex items-start space-x-3 transition ${selectedModels.includes(model.id)
                       ? 'bg-blue-900/20 border-blue-500'
                       : 'bg-slate-900 border-slate-800 hover:border-slate-700'
-                  }`}
+                    }`}
                 >
-                  <div className={`w-5 h-5 rounded border flex items-center justify-center mt-1 ${
-                    selectedModels.includes(model.id) ? 'bg-blue-600 border-blue-600' : 'border-slate-600'
-                  }`}>
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center mt-1 ${selectedModels.includes(model.id) ? 'bg-blue-600 border-blue-600' : 'border-slate-600'
+                    }`}>
                     {selectedModels.includes(model.id) && <Zap size={12} className="text-white" />}
                   </div>
                   <div>
@@ -160,12 +158,12 @@ const Council = () => {
         </div>
       ) : (
         <div className="animate-fade-in">
-           <div className="mb-6 flex items-center justify-between">
-             <h2 className="text-2xl font-bold text-slate-200">{prompt}</h2>
-             <button onClick={() => { setIsResearching(false); setNodes([]); }} className="text-sm text-slate-500 hover:text-white">New Research</button>
-           </div>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-slate-200">{prompt}</h2>
+            <button onClick={() => { setIsResearching(false); setNodes([]); }} className="text-sm text-slate-500 hover:text-white">New Research</button>
+          </div>
 
-           <NodeTree nodes={nodes} status={status} />
+          <NodeTree nodes={nodes} status={status} />
         </div>
       )}
     </div>
