@@ -34,7 +34,6 @@ def test_ensemble_ui_flow():
         api_key = os.getenv("OPENROUTER_API_KEY")
         if not api_key:
             pytest.fail("OPENROUTER_API_KEY environment variable not set")
-
         page.get_by_label("API Key").fill(api_key)
         page.get_by_role("button", name="Save Configuration").click()
 
@@ -54,7 +53,3 @@ def test_ensemble_ui_flow():
         # 6. Verify Execution
         expect(page.get_by_text("Initializing...")).to_be_visible()
         expect(page.get_by_text("All models are researching in parallel...", exact=False)).to_be_visible(timeout=30000)
-
-        # 7. Verify History Badge (after completion)
-        # We assume it completes or we check history later.
-        # For CI, we might stop here or wait.

@@ -11,7 +11,7 @@ const MODELS = [
   // Real/Prior
   { id: "openai/gpt-4o", name: "GPT-4o", desc: "Prior Flagship" },
   { id: "anthropic/claude-3-opus", name: "Claude 3 Opus", desc: "Prior Flagship" },
-  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", desc: "Factual and fast" },
+  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", desc: "Prior Flagship" },
   // Others
   { id: "meta-llama/llama-3-70b-instruct", name: "Llama 3 70B", desc: "Meta Flagship" },
   { id: "deepseek/deepseek-v3.2", name: "DeepSeek v3.2", desc: "Deepseek Flagship" },
@@ -73,6 +73,10 @@ const Council = () => {
                 placeholder="Enter your research question or topic..."
                 className="w-full h-32 bg-slate-800 border border-slate-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
               />
+              <div className="absolute bottom-4 right-4 flex space-x-2">
+                <button className="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-slate-300">Web Frameworks</button>
+                <button className="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-slate-300">API Security</button>
+              </div>
             </div>
 
             {/* Method Selection */}
@@ -114,8 +118,8 @@ const Council = () => {
                   key={model.id}
                   onClick={() => toggleModel(model.id)}
                   className={`cursor-pointer p-4 rounded-lg border flex items-start space-x-3 transition ${selectedModels.includes(model.id)
-                    ? 'bg-blue-900/20 border-blue-500'
-                    : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                      ? 'bg-blue-900/20 border-blue-500'
+                      : 'bg-slate-900 border-slate-800 hover:border-slate-700'
                     }`}
                 >
                   <div className={`w-5 h-5 rounded border flex items-center justify-center mt-1 ${selectedModels.includes(model.id) ? 'bg-blue-600 border-blue-600' : 'border-slate-600'

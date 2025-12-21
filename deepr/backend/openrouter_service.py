@@ -16,7 +16,7 @@ AVAILABLE_MODELS = [
     # Prior Flagships
     {"id": "openai/gpt-4o", "name": "GPT-4o", "description": "Prior Flagship"},
     {"id": "anthropic/claude-3-opus", "name": "Claude 3 Opus", "description": "Prior Flagship"},
-    {"id": "google/gemini-2.5-flash", "name": "Gemini 2.5 Flash", "description": "Prior Flagship"},
+    {"id": "google/gemini-2.5-pro", "name": "Gemini 2.5 Pro", "description": "Prior Flagship"},
     
     # Fast & Efficient
     {"id": "openai/gpt-3.5-turbo", "name": "GPT-3.5 Turbo", "description": "Fast & Efficient"},

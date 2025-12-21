@@ -10,6 +10,10 @@ class NodeType(enum.Enum):
     RESEARCH = "research"
     CRITIQUE = "critique"
     SYNTHESIS = "synthesis"
+    PROPOSAL = "proposal"
+    TEST_CASES = "test_cases"
+    REFINEMENT = "refinement"
+    VERDICT = "verdict"
 
 class User(Base):
     __tablename__ = "users"

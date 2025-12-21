@@ -13,6 +13,7 @@ from auth import get_current_user
 from encryption import decrypt_key
 from openrouter_service import OpenRouterClient
 from council_engine import CouncilEngine
+from engines.dxo_engine import DxOEngine
 from sqlalchemy import desc
 
 router = APIRouter()
@@ -57,9 +58,11 @@ async def start_council_session(
 
 class CouncilRunRequest(BaseModel):
     prompt: str
-    council_members: List[str]
-    chairman_model: str
-    method: str = "dag" # dag or ensemble
+    council_members: List[str] = []
+    chairman_model: str = "openai/gpt-4o"
+    method: str = "dag" # dag, ensemble, or dxo
+    roles: List[dict] = [] # List of {name, model, instructions}
+    max_iterations: int = 5 # Default max loops for DxO
 
 @router.post("/council/run")
 async def run_council(
@@ -114,6 +117,12 @@ async def run_council(
                 yield f"data: {json.dumps({'type': 'status', 'message': 'Synthesizing anonymized responses...'})}\n\n"
                 synthesis_node = await engine.run_ensemble_synthesis(conversation.id, root_node, research_nodes, request.chairman_model)
                 yield f"data: {json.dumps({'type': 'node', 'node': {'id': synthesis_node.id, 'type': 'synthesis', 'content': synthesis_node.content, 'model': synthesis_node.model_name}})}\n\n"
+
+            elif request.method == "dxo":
+                dxo_engine = DxOEngine(db, current_user, client)
+                yield f"data: {json.dumps({'type': 'status', 'message': 'Initializing DxO Virtual Panel...'})}\n\n"
+                async for event in dxo_engine.run_dxo_pipeline(conversation.id, root_node, request.roles, max_iterations=request.max_iterations):
+                    yield f"data: {event}\n\n"
 
             else:
                 # Default DAG flow

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import Council from './components/Council';
+import DxO from './components/DxO';
 import Settings from './components/Settings';
 import History from './components/History';
 import HistoryDetail from './components/HistoryDetail';
@@ -38,6 +39,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<ProtectedRoute><Council /></ProtectedRoute>} />
+        <Route path="/dxo" element={<ProtectedRoute><DxO /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/history/:id" element={<ProtectedRoute><HistoryDetail /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
