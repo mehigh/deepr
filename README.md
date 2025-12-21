@@ -12,6 +12,14 @@ DeepR is an AI Council research application. It allows you to query a prompt whi
 - **History:** Auto-saves your sessions for later review.
 - **Secure Configuration:** Encrypted storage for your OpenRouter API Key in the Settings page.
 
+## Screenshot
+
+![DeepR Interface](assets/screenshot.png)
+
+## Inspiration
+
+Inspired by Satya Nadella's [app demo that uses AI to create decision frameworks](https://www.youtube.com/watch?v=SEZADIErqyw), through which the following frameworks were shared: AI Coucil, Ensemble and also the Microsoft AI Diagnostic Orchestrator (MAI-DxO), a system designed to improve medical diagnosis accuracy.
+
 ## Quick Start (Docker)
 
 The easiest way to run DeepR is with Docker Compose.
