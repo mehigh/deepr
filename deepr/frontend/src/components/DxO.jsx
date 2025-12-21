@@ -9,7 +9,7 @@ const MODELS = [
   { id: "google/gemini-3-pro-preview", name: "Gemini 3 Pro", desc: "Google Flagship" },
   { id: "openai/gpt-4o", name: "GPT-4o", desc: "Prior Flagship" },
   { id: "anthropic/claude-3-opus", name: "Claude 3 Opus", desc: "Prior Flagship" },
-  { id: "google/gemini-1.5-pro", name: "Gemini 1.5 Pro", desc: "Prior Flagship" },
+  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", desc: "Gemini Fast" },
   { id: "meta-llama/llama-3-70b-instruct", name: "Llama 3 70B", desc: "Meta Flagship" },
 ];
 
