@@ -31,7 +31,9 @@ def test_ensemble_ui_flow():
              pytest.fail("Login failed or session lost")
 
         # Set Key
-        api_key = os.getenv("OPENROUTER_API_KEY", "sk-or-dummy")
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+            pytest.fail("OPENROUTER_API_KEY environment variable not set")
         page.get_by_label("API Key").fill(api_key)
         page.get_by_role("button", name="Save Configuration").click()
 
