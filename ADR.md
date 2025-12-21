@@ -41,3 +41,19 @@
     - **DAG Workflows (Council):** Use **Grouped/Topological Layouts** (Plan -> All Research -> All Critiques -> Synthesis). This emphasizes the hierarchy and parallel nature of the work.
     - **Debate/Iterative Workflows (DxO):** Use **Chronological/Threaded Layouts** (Proposal -> Critique -> Refinement). This emphasizes the evolution of the idea over time.
 - **Context:** A single "one size fits all" visualization breaks the narrative for iterative processes like DxO, where the *order* of operations (Draft v1 -> Critique -> Draft v2) is more important than the *category* of the node.
+
+## 8. Database Migrations
+- **Status:** Accepted
+- **Decision:** Use Alembic for database migrations.
+- **Context:** To manage schema changes across environments without data loss.
+- **Consequences:**
+    1. **Strict Schema Control:** All changes must have a migration script.
+    2. **No Manual DDL:** Do not execute SQL DDL manually.
+    3. **Deployment Process:** Pipeline must include `alembic upgrade head`.
+
+### Workflow: Making Database Changes
+1. Modify `models.py`.
+2. Generate migration: `alembic revision --autogenerate -m "..."`.
+3. Review migration script.
+4. Apply local: `alembic upgrade head`.
+5. Commit migration file and models.

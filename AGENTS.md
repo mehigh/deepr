@@ -44,3 +44,10 @@ The DxO workflow uses a more flexible, role-based panel approach. The system dyn
 
 ### 3. Loop Execution
 - The process iterates (Draft -> Review -> Refine) up to 3 times or until the "Critical Reviewer" assigns a confidence score >= 85%.
+
+## Collaboration Workflow
+
+To ensure smooth collaboration between human developers and AI agents (Jules) on the same branch:
+
+1.  **Pull Before Working**: Always pull the latest changes from the branch before starting any new task to avoid conflicts.
+2.  **Commit After Completing**: Commit all changes immediately after completing a task or request.
