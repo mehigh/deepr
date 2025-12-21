@@ -29,7 +29,7 @@ class OpenRouterClient:
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.client = AsyncOpenAI(
-            base_url="https://openrouter.ai/api/v1",
+            base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
             api_key=api_key,
         )
 
