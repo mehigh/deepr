@@ -38,9 +38,10 @@ If you prefer running outside Docker:
 
 **Backend:**
 1.  `cd deepr/backend`
-2.  `python -m venv venv && source venv/bin/activate`
-3.  `pip install -r requirements.txt`
-4.  `uvicorn main:app --reload` (Runs on port 8000)
+2.  `cp .env-example .env`
+3.  `python -m venv venv && source venv/bin/activate`
+4.  `pip install -r requirements.txt`
+5.  `uvicorn main:app --reload` (Runs on port 8000)
 
 **Frontend:**
 1.  `cd deepr/frontend`
