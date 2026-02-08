@@ -23,6 +23,9 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: Optional[str] = None
 
+class LoginRequest(BaseModel):
+    email: str
+
 class UserResponse(BaseModel):
     id: int
     email: str
@@ -39,6 +42,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+from sqlalchemy.orm import selectinload
+
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -54,20 +59,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     except JWTError:
         raise credentials_exception
     
-    result = await db.execute(select(User).where(User.email == token_data.email))
+    result = await db.execute(select(User).options(selectinload(User.settings)).where(User.email == token_data.email))
     user = result.scalars().first()
     if user is None:
         raise credentials_exception
     return user
 
 @router.post("/auth/dev-login", response_model=Token)
-async def dev_login(email: str = "test@example.com", db: AsyncSession = Depends(get_db)):
+async def dev_login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Creates a dummy user if not exists and returns a token."""
-    result = await db.execute(select(User).where(User.email == email))
+    result = await db.execute(select(User).where(User.email == request.email))
     user = result.scalars().first()
     
     if not user:
-        user = User(email=email, google_id="dev-dummy-id")
+        user = User(email=request.email, google_id="dev-dummy-id-" + request.email )
         db.add(user)
         await db.commit()
         await db.refresh(user)
