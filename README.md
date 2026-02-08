@@ -73,11 +73,16 @@ Inspired by Satya Nadella's [app demo that uses AI to create decision frameworks
 The easiest way to run DeepR is with Docker Compose.
 
 1.  **Prerequisites:** Install Docker and Docker Compose.
-2.  **Run:**
+
+2.  **Configure Environment Variables:**
+    -   Copy `.env.example` to `.env`.
+    -   Edit `.env` and set your IP and ports configuration.
+
+3.  **Run:**
     ```bash
     docker compose up --build
     ```
-3.  **Access:**
+4.  **Access:**
     -   Frontend: `http://${HOST_IP}:${FRONTEND_PORT}` (Default: `http://localhost:80`)
     -   Backend API: `http://${HOST_IP}:${BACKEND_PORT}` (Default: `http://localhost:8000`)
 
@@ -86,12 +91,15 @@ The easiest way to run DeepR is with Docker Compose.
 For detailed instructions on running the environment with hot-reloading, please see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ### Quick Summary
-1.  **Run:** `docker compose up --build`
-2.  **Edit:** Changes to frontend or backend files are applied instantly.
+1.  **IP and Ports:** Copy `.env.example` to `.env` and set your IP and ports configuration.
+2.  **Run:** `docker compose up --build`
+3.  **Edit:** Changes to frontend or backend files are applied instantly.
 
 ## Configuration
 
 -   **API Key:** You need an OpenRouter API Key. Enter it in the **Settings** page of the application (it is stored encrypted).
+-   **Models Configuration:** You can configure the models to be used in the application. Enter in OpenRouter https://openrouter.ai/settings/privacy/guardrails/new and create a new guardrail with the models you want to use. 
+
 -   **Environment Variables:** See `deepr/backend/.env` (created automatically or copy from `docker-compose.yml`).
 
 ### Environment Variables (from .env)
