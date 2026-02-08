@@ -4,38 +4,43 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=deepr
-      - POSTGRES_PASSWORD=deepr_password
-      - POSTGRES_DB=deepr_db
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "${HOST_IP}:${DB_PORT}:5432"
 
   backend:
     build: ./deepr/backend
     volumes:
       - ./deepr/backend:/app
     environment:
-      - DATABASE_URL=postgresql+asyncpg://deepr:deepr_password@db/deepr_db
-      - SECRET_KEY=change_this_secret_in_prod
-      - CODEBASE_SECRET=fixed_secret_for_encryption
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      - SECRET_KEY=${SECRET_KEY}
+      - CODEBASE_SECRET=${CODEBASE_SECRET}
+      - HOST_IP=${HOST_IP}
+      - BACKEND_PORT=${BACKEND_PORT}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+    command: uvicorn main:app --host 0.0.0.0 --port ${BACKEND_PORT} --reload
     ports:
-      - "8000:8000"
+      - "${HOST_IP}:${BACKEND_PORT}:${BACKEND_PORT}"
     depends_on:
       - db
 
   frontend:
-    build: 
+    build:
       context: ./deepr/frontend
       target: builder
     volumes:
       - ./deepr/frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000
-    command: npm run dev -- --host 0.0.0.0 --port 80
+      - VITE_API_URL=http://${HOST_IP}:${BACKEND_PORT}
+      - VITE_HOST_IP=${HOST_IP}
+      - VITE_FRONTEND_PORT=${FRONTEND_PORT}
+    command: npm run dev -- --host 0.0.0.0 --port ${FRONTEND_PORT}
     ports:
-      - "80:80"
+      - "${HOST_IP}:${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
       - backend
 

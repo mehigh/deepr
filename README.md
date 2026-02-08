@@ -78,8 +78,8 @@ The easiest way to run DeepR is with Docker Compose.
     docker compose up --build
     ```
 3.  **Access:**
-    -   Frontend: `http://localhost:80`
-    -   Backend API: `http://localhost:8000`
+    -   Frontend: `http://${HOST_IP}:${FRONTEND_PORT}` (Default: `http://localhost:80`)
+    -   Backend API: `http://${HOST_IP}:${BACKEND_PORT}` (Default: `http://localhost:8000`)
 
 ## Development Setup
 
@@ -93,3 +93,15 @@ For detailed instructions on running the environment with hot-reloading, please 
 
 -   **API Key:** You need an OpenRouter API Key. Enter it in the **Settings** page of the application (it is stored encrypted).
 -   **Environment Variables:** See `deepr/backend/.env` (created automatically or copy from `docker-compose.yml`).
+
+### Environment Variables (from .env)
+
+| Variable | Current Value | Description |
+|----------|---------------|-------------|
+| `HOST_IP` | `[IP_ADDRESS]` | Host IP address |
+| `BACKEND_PORT` | `8000` | Port for the FastAPI backend |
+| `FRONTEND_PORT` | `80` | Port for the React frontend |
+| `DB_PORT` | `5432` | Port for the PostgreSQL database |
+| `POSTGRES_USER` | `deepr` | Database username |
+| `POSTGRES_DB` | `deepr_db` | Database name |
+
