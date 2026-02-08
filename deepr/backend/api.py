@@ -11,8 +11,7 @@ from database import get_db
 from models import User, UserSettings, Conversation, NodeType, Node, Attachment
 from auth import get_current_user
 from encryption import decrypt_key
-from openrouter_service import OpenRouterClient
-# from openrouter_service import get_available_models for next release
+from openrouter_service import OpenRouterClient, get_available_models
 from council_engine import CouncilEngine
 from engines.dxo_engine import DxOEngine
 from sqlalchemy import desc
@@ -57,9 +56,7 @@ async def serialize_node_with_attachments(db: AsyncSession, node):
 
 @router.get("/models")
 async def get_models(current_user: User = Depends(get_current_user)):
-    return []
-    # return await get_available_models(current_user)
-    # from openrouter_service import get_available_models for next release
+   return await get_available_models(current_user)   
 
 class UpdateNodeCostRequest(BaseModel):
     actual_cost: float
