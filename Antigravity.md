@@ -8,8 +8,8 @@ DeepR is a multi-agent AI research platform (The "Council") comprised of:
 ## Dev Environment Tips
 
 - **Docker First**: The preferred way to run the app is `docker compose up --build`. This sets up both frontend and backend with hot-reloading.
-    - Frontend accessible at: `http://localhost:80`
-    - Backend accessible at: `http://localhost:8000`
+    - Frontend accessible at: `http://${HOST_IP}:${FRONTEND_PORT}`
+    - Backend accessible at: `http://${HOST_IP}:${BACKEND_PORT}`
 - **Manual Setup**:
     - **Frontend**:
         - Navigate to `deepr/frontend`
@@ -65,6 +65,18 @@ Located in `tests/test_frontend.py`. These use Playwright to verify the full use
 - **API Keys**: OpenRouter API keys are stored encrypted. Do not hardcode keys in codebase.
 - **Secrets**: Use `.env` files for local development secrets.
 - **Validation**: Ensure all API inputs are validated via Pydantic models to prevent injection attacks.
+
+## Environment Variables (from .env)
+
+| Variable | Current Value | Description |
+|----------|---------------|-------------|
+| `HOST_IP` | `[IP_ADDRESS]` | Host IP address |
+| `BACKEND_PORT` | `8000` | Port for the FastAPI backend |
+| `FRONTEND_PORT` | `80` | Port for the React frontend |
+| `DB_PORT` | `5432` | Port for the PostgreSQL database |
+| `POSTGRES_USER` | `deepr` | Database username |
+| `POSTGRES_DB` | `deepr_db` | Database name |
+
 
 ## PR Instructions
 
