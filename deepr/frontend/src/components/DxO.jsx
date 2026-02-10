@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
-import { streamCouncil } from '../api';
+import { streamCouncil, uploadFiles } from '../api';
 import NodeTree from './NodeTree';
-import { Trash2, Plus, X } from 'lucide-react';
+import { Trash2, Plus, X, Paperclip } from 'lucide-react';
+import AttachmentList from './AttachmentList';
+import { useModels } from '../hooks';
+import { ModelSelect } from './ModelSelector';
 
-const MODELS = [
-  { id: "openai/gpt-5.2", name: "GPT-5.2", desc: "OpenAI Flagship" },
-  { id: "anthropic/claude-opus-4.5", name: "Claude 4.5 Opus", desc: "Anthropic Flagship" },
-  { id: "google/gemini-3-pro-preview", name: "Gemini 3 Pro", desc: "Google Flagship" },
-  { id: "openai/gpt-4o", name: "GPT-4o", desc: "Prior Flagship" },
-  { id: "anthropic/claude-3-opus", name: "Claude 3 Opus", desc: "Prior Flagship" },
-  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", desc: "Gemini Fast" },
-  { id: "meta-llama/llama-3-70b-instruct", name: "Llama 3 70B", desc: "Meta Flagship" },
-];
+
 
 const DEFAULT_ROLES = [
   {
@@ -39,18 +34,51 @@ const DEFAULT_ROLES = [
 ];
 
 const DxO = () => {
+  const { models, loading } = useModels();
   const [prompt, setPrompt] = useState('');
   const [roles, setRoles] = useState(DEFAULT_ROLES);
   const [isRunning, setIsRunning] = useState(false);
   const [nodes, setNodes] = useState([]);
   const [status, setStatus] = useState('');
   const [maxIterations, setMaxIterations] = useState(3);
+  const [attachments, setAttachments] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+
+  const [submittedAttachments, setSubmittedAttachments] = useState([]);
+
+  const defaultRoles = () => {
+    return [
+      {
+        id: 1,
+        name: "Lead Researcher",
+        model: models.find(m => m.id === "anthropic/claude-opus-4.5") ? "anthropic/claude-opus-4.5" : models[0].id,
+        perspective: "Primary analysis and synthesis",
+        instructions: "Conduct thorough research analysis, identify key findings and patterns."
+      },
+      {
+        id: 2,
+        name: "Critical Reviewer",
+        model: models.find(m => m.id === "openai/gpt-5.2") ? "openai/gpt-5.2" : models[0].id,
+        perspective: "Identify gaps and weaknesses",
+        instructions: "Critically evaluate the research, identify methodological issues and limitations.",
+        locked: true
+      },
+      {
+        id: 3,
+        name: "Domain Expert",
+        model: models.find(m => m.id === "google/gemini-3-pro-preview") ? "google/gemini-3-pro-preview" : models[0].id,
+        perspective: "Deep domain knowledge",
+        instructions: "Provide specialized expertise and context from the relevant field."
+      }
+    ]
+  };
 
   const addRole = () => {
     setRoles([...roles, {
       id: Date.now(),
       name: "New Role",
-      model: "openai/gpt-4o",
+      model: models.find(m => m.id === "openai/gpt-4o") ? "openai/gpt-4o" : models[0].id,
       perspective: "Specialized perspective",
       instructions: ""
     }]);
@@ -64,11 +92,34 @@ const DxO = () => {
     setRoles(roles.filter(r => r.id !== id));
   };
 
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const uploadedFiles = await uploadFiles(files);
+      setAttachments(prev => [...prev, ...uploadedFiles]);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setStatus('Error uploading files: ' + error.message);
+    } finally {
+      setUploading(false);
+      // Reset input
+      e.target.value = '';
+    }
+  };
+
+  const removeAttachment = (id) => {
+    setAttachments(prev => prev.filter(a => a.id !== id));
+  };
+
   const handleStart = () => {
     if (!prompt) return;
     setIsRunning(true);
     setNodes([]);
     setStatus('Initializing DxO Panel...');
+    setSubmittedAttachments([]);
 
     // Pass the roles config to the backend
     const rolesPayload = roles.map(r => ({
@@ -80,11 +131,18 @@ const DxO = () => {
     // Use the first role (Lead Researcher) as the primary/chairman model
     const leadModel = roles.length > 0 ? roles[0].model : "openai/gpt-4o";
 
+    const attachmentIds = attachments.map(a => a.id);
+
     streamCouncil(prompt, [], leadModel, 'dxo', (event) => {
       if (event.type === 'status') {
         setStatus(event.message);
       } else if (event.type === 'node') {
         setNodes(prev => [...prev, event.node]);
+
+        // If this is the root node, extract its attachments to confirm they are saved
+        if (event.node.type === 'root' && event.node.attachments) {
+          setSubmittedAttachments(event.node.attachments);
+        }
       } else if (event.type === 'done') {
         setStatus('done');
         setIsRunning(false);
@@ -92,7 +150,7 @@ const DxO = () => {
         setStatus('Error: ' + event.message);
         setIsRunning(false);
       }
-    }, rolesPayload, maxIterations);
+    }, rolesPayload, maxIterations, attachmentIds);
   };
 
   return (
@@ -101,11 +159,37 @@ const DxO = () => {
         <div className="animate-fade-in space-y-8">
           <div>
             <h2 className="text-2xl font-bold mb-4">DxO Request</h2>
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe the problem or system you want the DxO panel to analyze..."
-              className="w-full h-32 bg-slate-800 border border-slate-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none"
+            <div className="relative mb-4">
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Describe the problem or system you want the DxO panel to analyze..."
+                className="w-full h-32 bg-slate-800 border border-slate-700 rounded-lg p-4 pb-12 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none"
+              />
+              <div className="absolute bottom-4 left-4">
+                <input
+                  type="file"
+                  id="dxo-file-upload"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  disabled={uploading}
+                />
+                <label
+                  htmlFor="dxo-file-upload"
+                  className={`cursor-pointer flex items-center p-2 bg-slate-700 hover:bg-slate-600 rounded-full text-slate-300 hover:text-white transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title="Attach files"
+                >
+                  <Paperclip size={18} />
+                  {uploading && <span className="ml-2 text-xs">Uploading...</span>}
+                </label>
+              </div>
+            </div>
+
+            <AttachmentList
+              attachments={attachments}
+              onRemove={removeAttachment}
+              uploading={uploading}
             />
           </div>
 
@@ -152,15 +236,12 @@ const DxO = () => {
                     </div>
                     <div className="col-span-4">
                       <label className="block text-xs text-slate-500 mb-1">Assigned Model</label>
-                      <select
+                      <ModelSelect
+                        models={models}
                         value={role.model}
-                        onChange={(e) => updateRole(role.id, 'model', e.target.value)}
+                        onChange={(val) => updateRole(role.id, 'model', val)}
                         className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm focus:border-purple-500 focus:outline-none appearance-none"
-                      >
-                        {MODELS.map(m => (
-                          <option key={m.id} value={m.id}>{m.name}</option>
-                        ))}
-                      </select>
+                      />
                     </div>
                     <div className="col-span-4">
                       <label className="block text-xs text-slate-500 mb-1">Perspective/Focus</label>
@@ -205,7 +286,11 @@ const DxO = () => {
         <div className="animate-fade-in">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-slate-200">{prompt}</h2>
-            <button onClick={() => { setIsRunning(false); setNodes([]); }} className="text-sm text-slate-500 hover:text-white">New Session</button>
+            <button onClick={() => { setIsRunning(false); setNodes([]); setSubmittedAttachments([]); }} className="text-sm text-slate-500 hover:text-white">New Session</button>
+          </div>
+
+          <div className="mb-6">
+            <AttachmentList attachments={submittedAttachments} />
           </div>
 
           <NodeTree nodes={nodes} status={status} />

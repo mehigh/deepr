@@ -3,8 +3,9 @@ import json
 import re
 from typing import List, Dict, Optional, Any
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from models import Conversation, Node, NodeType, User
-from openrouter_service import OpenRouterClient
+from openrouter_service import OpenRouterClient, get_unsupported_attachments
 
 class DxOEngine:
     def __init__(self, db: AsyncSession, user: User, openrouter_client: OpenRouterClient):
@@ -12,18 +13,65 @@ class DxOEngine:
         self.user = user
         self.client = openrouter_client
 
-    async def create_node(self, conversation_id: int, parent_id: Optional[int], node_type: str, content: str, model_name: str = None, metadata: Dict = None):
+    async def create_node(
+        self, 
+        conversation_id: int, 
+        parent_id: Optional[int], 
+        node_type: str, 
+        content: str, 
+        model_name: str = None, 
+        attachment_filenames: str = None, 
+        prompt_sent: str = None,
+        actual_cost: float = None,
+        warnings: str = None
+    ):
         node = Node(
             conversation_id=conversation_id,
             parent_id=parent_id,
             type=node_type,
             content=content,
-            model_name=model_name
+            model_name=model_name,
+            attachment_filenames=attachment_filenames,
+            prompt_sent=prompt_sent,
+            actual_cost=actual_cost,
+            warnings=warnings
         )
         self.db.add(node)
         await self.db.commit()
         await self.db.refresh(node)
         return node
+
+    async def get_attachments_for_node(self, node_id: int):
+        """Get attachments associated with a node"""
+        from models import Attachment
+        result = await self.db.execute(
+            select(Attachment).where(Attachment.node_id == node_id)
+        )
+        return result.scalars().all()
+
+    async def get_attachments_chain(self, node: Node, max_depth: int = 3):
+        """
+        Get attachments from node and its ancestors.
+        """
+        from models import Attachment
+        attachments = []
+        current = node
+        depth = 0
+        
+        while current and depth < max_depth:
+            node_atts = await self.get_attachments_for_node(current.id)
+            attachments.extend(node_atts)
+            
+            if current.parent_id:
+                result = await self.db.execute(
+                    select(Node).where(Node.id == current.parent_id)
+                )
+                current = result.scalars().first()
+                depth += 1
+            else:
+                break
+        
+        return attachments
 
     async def run_dxo_pipeline(self, conversation_id: int, root_node: Node, roles: List[Dict], max_iterations: int = 3):
         """
@@ -39,6 +87,10 @@ class DxOEngine:
         if not roles:
              yield json.dumps({'type': 'error', 'message': 'No roles defined!'})
              return
+
+        # Get attachments using chain from root node
+        attachments = await self.get_attachments_chain(root_node, max_depth=3)
+        attachment_filenames = ",".join([att.filename for att in attachments]) if attachments else None
 
         # 1. Identify Roles
         proposer_role = next((r for r in roles if "Lead" in r['name'] or "Architect" in r['name'] or "Researcher" in r['name']), roles[0])
@@ -65,13 +117,32 @@ class DxOEngine:
         Please provide a solid initial design/response. Focus on structure, patterns, and scalability.
         """
 
-        response = await self.client.chat_completion(
+        # Cost tracking and attachment handling
+        response, cost_info = await self.client.chat_completion_details(
             model=proposer_role['model'],
-            messages=[{"role": "user", "content": proposal_prompt}]
+            messages=[{"role": "user", "content": proposal_prompt}],
+            attachments=attachments
         )
         draft_content = response.choices[0].message.content
-        draft_node = await self.create_node(conversation_id, root_node.id, "proposal", draft_content, model_name=proposer_role['model'])
-        yield json.dumps({'type': 'node', 'node': {'id': draft_node.id, 'type': 'proposal', 'content': draft_node.content, 'model': draft_node.model_name}})
+        
+        warning_list = get_unsupported_attachments(proposer_role['model'], attachments)
+
+        draft_node = await self.create_node(
+            conversation_id, 
+            root_node.id, 
+            "proposal", 
+            draft_content, 
+            model_name=proposer_role['model'],
+            attachment_filenames=attachment_filenames,
+            prompt_sent=proposal_prompt.strip(),
+            actual_cost=cost_info['actual_cost'],
+            warnings=json.dumps(warning_list) if warning_list else None
+        )
+        
+        yield json.dumps({'type': 'node', 'node': {
+            'id': draft_node.id, 'type': 'proposal', 'content': draft_node.content, 'model': draft_node.model_name,
+            'actual_cost': draft_node.actual_cost, 'attachment_filenames': draft_node.attachment_filenames, 'prompt_sent': draft_node.prompt_sent
+        }})
 
         # Define the Reviewer Runner Helper
         async def run_single_reviewer(role, content_to_review, is_gatekeeper=False):
@@ -114,9 +185,10 @@ class DxOEngine:
                  Provide your analysis, pointed critiques, or suggestions based on your expertise.
                  """
 
-            res = await self.client.chat_completion(
+            res, reviewer_cost = await self.client.chat_completion_details(
                 model=role['model'],
-                messages=[{"role": "user", "content": review_prompt}]
+                messages=[{"role": "user", "content": review_prompt}],
+                attachments=attachments
             )
             response_text = res.choices[0].message.content
             
@@ -127,8 +199,20 @@ class DxOEngine:
                 if score_match:
                     score = int(score_match.group(1))
             
+            reviewer_warnings = get_unsupported_attachments(role['model'], attachments)
             display_name = f"{role['name']} ({role['model']})"
-            new_node = await self.create_node(conversation_id, draft_node.id, node_type, response_text, model_name=display_name)
+            
+            new_node = await self.create_node(
+                conversation_id, 
+                draft_node.id, 
+                node_type, 
+                response_text, 
+                model_name=display_name,
+                attachment_filenames=attachment_filenames,
+                prompt_sent=review_prompt.strip(),
+                actual_cost=reviewer_cost['actual_cost'],
+                warnings=json.dumps(reviewer_warnings) if reviewer_warnings else None
+            )
             
             return {
                 'role': role['name'],
@@ -161,7 +245,10 @@ class DxOEngine:
                         'type': res['type'], 
                         'content': res['content'], 
                         'model': res['node'].model_name,
-                        'score': 0
+                        'score': 0,
+                        'actual_cost': res['node'].actual_cost,
+                        'attachment_filenames': res['node'].attachment_filenames,
+                        'prompt_sent': res['node'].prompt_sent
                     }})
             
             # --- Phase C: Refinement ---
@@ -178,13 +265,31 @@ class DxOEngine:
             Fix the issues identified. Provide a new version (Draft_v{iteration+1}).
             """
 
-            response = await self.client.chat_completion(
+            response, refine_cost = await self.client.chat_completion_details(
                 model=proposer_role['model'],
-                messages=[{"role": "user", "content": refine_prompt}]
+                messages=[{"role": "user", "content": refine_prompt}],
+                attachments=attachments
             )
             draft_content = response.choices[0].message.content
-            draft_node = await self.create_node(conversation_id, draft_node.id, "refinement", draft_content, model_name=proposer_role['model'])
-            yield json.dumps({'type': 'node', 'node': {'id': draft_node.id, 'type': 'refinement', 'content': draft_content, 'model': draft_node.model_name}})
+            
+            refine_warnings = get_unsupported_attachments(proposer_role['model'], attachments)
+            
+            draft_node = await self.create_node(
+                conversation_id, 
+                draft_node.id, 
+                "refinement", 
+                draft_content, 
+                model_name=proposer_role['model'],
+                attachment_filenames=attachment_filenames,
+                prompt_sent=refine_prompt.strip(),
+                actual_cost=refine_cost['actual_cost'],
+                warnings=json.dumps(refine_warnings) if refine_warnings else None
+            )
+            
+            yield json.dumps({'type': 'node', 'node': {
+                'id': draft_node.id, 'type': 'refinement', 'content': draft_content, 'model': draft_node.model_name,
+                'actual_cost': draft_node.actual_cost, 'attachment_filenames': draft_node.attachment_filenames, 'prompt_sent': draft_node.prompt_sent
+            }})
 
             # --- Phase D: Critical Review (Gatekeeper) ---
             if critic_role:
@@ -198,7 +303,10 @@ class DxOEngine:
                     'type': critic_res['type'], 
                     'content': critic_res['content'], 
                     'model': critic_res['node'].model_name,
-                    'score': confidence_score
+                    'score': confidence_score,
+                    'actual_cost': critic_res['node'].actual_cost,
+                    'attachment_filenames': critic_res['node'].attachment_filenames,
+                    'prompt_sent': critic_res['node'].prompt_sent
                 }})
             else:
                 # Fallback if no critic exists
@@ -214,5 +322,21 @@ class DxOEngine:
         EXECUTIVE SUMMARY:
         (See final draft)
         """
-        final_node = await self.create_node(conversation_id, draft_node.id, "verdict", final_verdict, model_name="System")
-        yield json.dumps({'type': 'node', 'node': {'id': final_node.id, 'type': 'verdict', 'content': final_verdict, 'model': 'System'}})
+        final_node = await self.create_node(
+            conversation_id, 
+            draft_node.id, 
+            "verdict", 
+            final_verdict, 
+            model_name="System",
+            attachment_filenames=attachment_filenames,
+            actual_cost=0.0 # System node has no cost
+        )
+        yield json.dumps({'type': 'node', 'node': {
+            'id': final_node.id, 
+            'conversation_id': conversation_id,
+            'type': 'verdict', 
+            'content': final_verdict, 
+            'model': 'System', 
+            'actual_cost': 0.0,
+            'attachment_filenames': final_node.attachment_filenames
+        }})
