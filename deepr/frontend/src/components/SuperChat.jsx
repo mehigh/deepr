@@ -10,7 +10,7 @@ import { Send, User, MessageSquare, Paperclip } from 'lucide-react';
 const SuperChat = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { models, loading: modelsLoading } = useModels();
+    const { models, loading: modelsLoading, error: modelsError } = useModels();
 
     const [nodes, setNodes] = useState([]);
     const [prompt, setPrompt] = useState('');
@@ -138,6 +138,28 @@ const SuperChat = () => {
     // If new session (no turns), show setup
     if (!id && turns.length === 0) {
         if (modelsLoading) return <div className="p-8 text-center text-slate-400">Loading models...</div>;
+
+
+        // Handle missing key error
+        if (modelsError && modelsError.isMissingKey) {
+            return (
+                <div className="max-w-4xl mx-auto mt-20 p-8 bg-slate-900 border border-slate-700 rounded-lg text-center animate-fade-in">
+                    <div className="text-yellow-500 text-5xl mb-4">⚠️</div>
+                    <h2 className="text-2xl font-bold text-white mb-2">OpenRouter API Key Required</h2>
+                    <p className="text-slate-400 mb-6">
+                        To start a SuperChat session, you need to configure your OpenRouter API Key.
+                    </p>
+                    <a
+                        href="/settings"
+                        className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition"
+                    >
+                        Configure API Key
+                    </a>
+                </div>
+            );
+        }
+
+        if (modelsError) return <div className="p-8 text-center text-red-400">Error loading models: {modelsError.message}</div>;
 
         return (
             <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-20">
