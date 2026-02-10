@@ -207,8 +207,9 @@ class OpenRouterClient:
                         msg['content'] = content_array
         
         # Determine referer
-        host = os.getenv("HOST_IP", "localhost")
-        port = os.getenv("FRONTEND_PORT", "9080")
+        # Determine referer
+        host = os.getenv("HOST_IP")
+        port = os.getenv("FRONTEND_PORT")
         referer = f"http://{host}:{port}"
 
         # Make the API call        

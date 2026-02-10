@@ -4,9 +4,10 @@
  */
 
 // API Configuration
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9000';
-export const HOST_IP = import.meta.env.VITE_HOST_IP || 'localhost';
-export const FRONTEND_PORT = import.meta.env.VITE_FRONTEND_PORT || '9080';
+// API Configuration
+export const API_URL = import.meta.env.VITE_API_URL;
+export const HOST_IP = import.meta.env.VITE_HOST_IP;
+export const FRONTEND_PORT = import.meta.env.VITE_FRONTEND_PORT;
 
 // Derived URLs
 export const BACKEND_URL = API_URL;
