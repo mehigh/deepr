@@ -25,8 +25,7 @@ load_dotenv()
 
 from models import Base
 target_metadata = Base.metadata
-print(f"DEBUG: Tables in metadata: {target_metadata.tables.keys()}")
-
+# print(f"DEBUG: Tables in metadata: {target_metadata.tables.keys()}")
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

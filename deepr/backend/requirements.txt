@@ -10,3 +10,4 @@ aiosqlite
 pydantic-settings
 openai
 asyncpg
+python-multipart
