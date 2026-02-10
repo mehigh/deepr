@@ -219,7 +219,13 @@ const Council = () => {
           {/* New Research Button */}
           <div className="mb-6 flex justify-end">
             <button
-              onClick={() => { setIsResearching(false); setNodes([]); setSubmittedAttachments([]); }}
+              onClick={() => {
+                setIsResearching(false);
+                setNodes([]);
+                setSubmittedAttachments([]);
+                setAttachments([]);
+                setPrompt('');
+              }}
               className="text-sm text-slate-500 hover:text-white transition"
             >
               New Research

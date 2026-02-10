@@ -308,7 +308,13 @@ const DxO = () => {
         <div className="animate-fade-in">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-slate-200">{prompt}</h2>
-            <button onClick={() => { setIsRunning(false); setNodes([]); setSubmittedAttachments([]); }} className="text-sm text-slate-500 hover:text-white">New Session</button>
+            <button onClick={() => {
+              setIsRunning(false);
+              setNodes([]);
+              setSubmittedAttachments([]);
+              setAttachments([]);
+              setPrompt('');
+            }} className="text-sm text-slate-500 hover:text-white">New Session</button>
           </div>
 
           <div className="mb-6">
