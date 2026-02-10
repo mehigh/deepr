@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getConversation } from '../api';
 import NodeTree from './NodeTree';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MessageSquare } from 'lucide-react';
+import AttachmentList from './AttachmentList';
+import ReactMarkdown from 'react-markdown';
 
 const HistoryDetail = () => {
   const { id } = useParams();
@@ -27,7 +29,7 @@ const HistoryDetail = () => {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <button 
+      <button
         onClick={() => navigate('/history')}
         className="flex items-center text-slate-400 hover:text-white mb-6 transition"
       >
@@ -37,14 +39,34 @@ const HistoryDetail = () => {
       <div className="mb-8 border-b border-slate-800 pb-4">
         <h1 className="text-2xl font-bold text-white mb-2">{conversation.title}</h1>
         <div className="flex items-center space-x-2">
-            <span className={`text-xs px-2 py-1 rounded ${conversation.method === 'ensemble' ? 'bg-purple-900 text-purple-200' : 'bg-blue-900 text-blue-200'}`}>
-                {conversation.method === 'ensemble' ? 'Ensemble' : 'AI Council (DAG)'}
-            </span>
-            <p className="text-xs text-slate-500">
+          <span className={`text-xs px-2 py-1 rounded ${conversation.method === 'ensemble' ? 'bg-purple-900 text-purple-200' : 'bg-blue-900 text-blue-200'}`}>
+            {conversation.method === 'ensemble' ? 'Ensemble' : 'AI Council (DAG)'}
+          </span>
+          <p className="text-xs text-slate-500">
             Started on {new Date(conversation.created_at).toLocaleString()}
-            </p>
+          </p>
         </div>
       </div>
+
+      {/* Root Node - User's Original Question */}
+      {(() => {
+        const rootNode = nodes.find(n => n.type === 'root');
+        if (rootNode) {
+          return (
+            <div className="mb-6 p-4 bg-slate-900 border border-slate-800 rounded-lg">
+              <div className="flex items-center space-x-2 mb-2 text-slate-400">
+                <MessageSquare size={20} />
+                <h3 className="font-semibold">Your Question</h3>
+              </div>
+              <div className="text-slate-300 prose prose-invert max-w-none">
+                <ReactMarkdown>{rootNode.content}</ReactMarkdown>
+              </div>
+              <AttachmentList attachments={rootNode.attachments} />
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       <NodeTree nodes={nodes} status="done" />
     </div>
