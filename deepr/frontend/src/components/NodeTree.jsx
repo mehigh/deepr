@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot, Brain, MessageSquare, CheckCircle, GitCommit, Clock } from 'lucide-react';
+import AttachmentList from './AttachmentList';
+import ParametersSpoiler from './ParametersSpoiler';
+import CostSummary from './CostSummary';
 
 const NodeTree = ({ nodes, status }) => {
   // Simple hierarchical view
@@ -11,7 +14,7 @@ const NodeTree = ({ nodes, status }) => {
   // 5. Synthesis (Final Answer)
 
   // Group nodes by type
-  const root = nodes.find(n => n.type === 'root'); // Not actually streamed back usually, but if we did
+  const root = nodes.find(n => n.type === 'root');
   const plan = nodes.find(n => n.type === 'plan');
   const research = nodes.filter(n => n.type === 'research');
   const critiques = nodes.filter(n => n.type === 'critique');
@@ -48,6 +51,10 @@ const NodeTree = ({ nodes, status }) => {
                 </div>
                 <div className="bg-slate-900 border-l-2 border-blue-500 p-4 rounded-r-lg text-slate-300 prose prose-invert max-w-none">
                   <ReactMarkdown>{node.content}</ReactMarkdown>
+                  <ParametersSpoiler
+                    actualCost={node.actual_cost}
+                    attachmentFilenames={node.attachment_filenames}
+                    promptSent={node.prompt_sent} />
                 </div>
               </div>
             );
@@ -73,6 +80,10 @@ const NodeTree = ({ nodes, status }) => {
                 </div>
                 <div className="bg-slate-900 border border-orange-900/30 p-4 rounded-lg text-sm text-slate-300">
                   <ReactMarkdown>{node.content}</ReactMarkdown>
+                  <ParametersSpoiler
+                    actualCost={node.actual_cost}
+                    attachmentFilenames={node.attachment_filenames}
+                    promptSent={node.prompt_sent} />
                 </div>
               </div>
             );
@@ -88,6 +99,10 @@ const NodeTree = ({ nodes, status }) => {
                 </div>
                 <div className="bg-slate-900 border border-red-900/30 p-4 rounded-lg text-sm text-slate-300">
                   <ReactMarkdown>{node.content}</ReactMarkdown>
+                  <ParametersSpoiler
+                    actualCost={node.actual_cost}
+                    attachmentFilenames={node.attachment_filenames}
+                    promptSent={node.prompt_sent} />
                 </div>
               </div>
             );
@@ -103,7 +118,21 @@ const NodeTree = ({ nodes, status }) => {
                 </div>
                 <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-green-500/30 p-6 rounded-lg shadow-lg shadow-green-900/10 prose prose-invert max-w-none">
                   <ReactMarkdown>{node.content}</ReactMarkdown>
+
+                  {/* Attachments from ROOT node or current node */}
+                  <AttachmentList attachments={root?.attachments || []} />
+
+                  <ParametersSpoiler
+                    actualCost={node.actual_cost}
+                    totalCost={nodes.reduce((sum, n) => sum + (n.actual_cost || 0), 0)}
+                    attachmentFilenames={node.attachment_filenames}
+                    promptSent={node.prompt_sent}
+                    warnings={node.warnings || []}
+                  />
                 </div>
+
+                {/* Total Cost Summary */}
+                <CostSummary conversationId={node.conversation_id} />
               </div>
             );
           }
@@ -134,6 +163,10 @@ const NodeTree = ({ nodes, status }) => {
           </div>
           <div className="bg-slate-900 border-l-2 border-blue-500 p-4 rounded-r-lg text-slate-300 prose prose-invert max-w-none">
             <ReactMarkdown>{plan.content}</ReactMarkdown>
+            <ParametersSpoiler
+              actualCost={plan.actual_cost}
+              attachmentFilenames={plan.attachment_filenames}
+              promptSent={plan.prompt_sent} />
           </div>
         </div>
       )}
@@ -153,6 +186,10 @@ const NodeTree = ({ nodes, status }) => {
                 </div>
                 <div className="text-sm text-slate-300 max-h-60 overflow-y-auto custom-scrollbar">
                   <ReactMarkdown>{node.content}</ReactMarkdown>
+                  <ParametersSpoiler
+                    actualCost={node.actual_cost}
+                    attachmentFilenames={node.attachment_filenames}
+                    promptSent={node.prompt_sent} />
                 </div>
               </div>
             ))}
@@ -175,6 +212,10 @@ const NodeTree = ({ nodes, status }) => {
                 </div>
                 <div className="text-sm text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
                   <ReactMarkdown>{node.content}</ReactMarkdown>
+                  <ParametersSpoiler
+                    actualCost={node.actual_cost}
+                    attachmentFilenames={node.attachment_filenames}
+                    promptSent={node.prompt_sent} />
                 </div>
               </div>
             ))}
@@ -192,7 +233,18 @@ const NodeTree = ({ nodes, status }) => {
           </div>
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-green-500/30 p-6 rounded-lg shadow-lg shadow-green-900/10 prose prose-invert max-w-none">
             <ReactMarkdown>{synthesis.content}</ReactMarkdown>
+            <AttachmentList attachments={root?.attachments || []} />
+            <ParametersSpoiler
+              attachmentFilenames={synthesis.attachment_filenames}
+              promptSent={synthesis.prompt_sent}
+              actualCost={synthesis.actual_cost}
+              totalCost={nodes.reduce((sum, n) => sum + (n.actual_cost || 0), 0)}
+              warnings={synthesis.warnings || []}
+            />
           </div>
+
+          {/* Total Cost Summary */}
+          <CostSummary conversationId={synthesis.conversation_id} />
         </div>
       )}
 

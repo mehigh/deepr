@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_URL = 'http://localhost:8000';
+import { API_URL } from './config';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -50,7 +49,40 @@ export const fetchModels = async () => {
   return response.data;
 };
 
-export const streamSuperChat = (prompt, conversationId, councilMembers, chairmanModel, onEvent) => {
+export const getOpenRouterUsage = async () => {
+  const response = await api.get('/openrouter/usage');
+  return response.data.usage;
+};
+
+export const updateNodeCost = async (nodeId, actualCost) => {
+  const response = await api.put(`/nodes/${nodeId}/cost`, { actual_cost: actualCost });
+  return response.data;
+};
+
+
+
+
+export const uploadFiles = async (files) => {
+  const formData = new FormData();
+  files.forEach(file => formData.append('files', file));
+
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_URL}/api/upload`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  if (!response.ok) {
+    throw new Error('Upload failed');
+  }
+
+  return response.json();
+};
+
+export const streamSuperChat = (prompt, conversationId, councilMembers, chairmanModel, onEvent, attachmentIds = []) => {
   const token = localStorage.getItem('token');
 
   fetch(`${API_URL}/superchat/chat`, {
@@ -63,7 +95,8 @@ export const streamSuperChat = (prompt, conversationId, councilMembers, chairman
       prompt,
       conversation_id: conversationId,
       council_members: councilMembers,
-      chairman_model: chairmanModel
+      chairman_model: chairmanModel,
+      attachment_ids: attachmentIds
     })
   }).then(async response => {
     if (!response.ok) {
@@ -113,12 +146,12 @@ export const streamSuperChat = (prompt, conversationId, councilMembers, chairman
   });
 };
 
-export const streamCouncil = (prompt, councilMembers, chairmanModel, method, onEvent, roles = [], maxIterations = 3) => {
+export const streamCouncil = (prompt, councilMembers, chairmanModel, method, onEvent, roles = [], maxIterations = 3, attachmentIds = []) => {
   const token = localStorage.getItem('token');
-  
+
   // Use fetch for streaming body support if possible, or just standard SSE endpoint
   // But we implemented POST streaming. Fetch API supports reading stream body.
-  
+
   fetch(`${API_URL}/council/run`, {
     method: 'POST',
     headers: {
@@ -131,22 +164,23 @@ export const streamCouncil = (prompt, councilMembers, chairmanModel, method, onE
       chairman_model: chairmanModel,
       method: method,
       roles: roles,
-      max_iterations: maxIterations
+      max_iterations: maxIterations,
+      attachment_ids: attachmentIds
     })
   }).then(async response => {
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
-    
+
     if (!response.body) {
       throw new Error('Response body is null');
     }
-    
+
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
-    
+
     try {
       while (true) {
         const { done, value } = await reader.read();
@@ -154,13 +188,13 @@ export const streamCouncil = (prompt, councilMembers, chairmanModel, method, onE
           // Stream ended normally
           break;
         }
-        
+
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
-        
+
         // Process all complete lines
         buffer = lines.pop(); // Keep the last incomplete line in buffer
-        
+
         for (const line of lines) {
           if (line.trim() === '') continue;
           if (line.startsWith('data: ')) {
