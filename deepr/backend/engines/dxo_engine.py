@@ -125,7 +125,7 @@ class DxOEngine:
         )
         draft_content = response.choices[0].message.content
         
-        warning_list = get_unsupported_attachments(proposer_role['model'], attachments)
+        warning_list = get_unsupported_attachments(proposer_role['model'], attachments, self.user.id)
 
         draft_node = await self.create_node(
             conversation_id, 
@@ -199,7 +199,7 @@ class DxOEngine:
                 if score_match:
                     score = int(score_match.group(1))
             
-            reviewer_warnings = get_unsupported_attachments(role['model'], attachments)
+            reviewer_warnings = get_unsupported_attachments(role['model'], attachments, self.user.id)
             display_name = f"{role['name']} ({role['model']})"
             
             new_node = await self.create_node(
@@ -272,7 +272,7 @@ class DxOEngine:
             )
             draft_content = response.choices[0].message.content
             
-            refine_warnings = get_unsupported_attachments(proposer_role['model'], attachments)
+            refine_warnings = get_unsupported_attachments(proposer_role['model'], attachments, self.user.id)
             
             draft_node = await self.create_node(
                 conversation_id, 

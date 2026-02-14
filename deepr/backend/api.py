@@ -125,7 +125,7 @@ async def upload_files(
         uploaded.append({
             'id': file_id,
             'filename': file.filename,
-            'size': file_size,
+            'file_size': file_size,
             'type': file_type
         })
     
@@ -133,7 +133,7 @@ async def upload_files(
 
 @router.get("/api/attachments/{attachment_id}")
 async def download_attachment(
-    attachment_id: int,
+    attachment_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -141,12 +141,32 @@ async def download_attachment(
     Download attachment file.
     Verifies user owns the conversation containing this attachment.
     """
+    # 1. Check temp storage first (for files not yet saved to DB)
+    if attachment_id in temp_storage:
+        file_info = temp_storage[attachment_id]
+        if file_info['user_id'] != current_user.id:
+            raise HTTPException(403, "Access denied")
+            
+        return Response(
+            content=file_info['file_data'],
+            media_type=file_info['mime_type'],
+            headers={
+                "Content-Disposition": f'attachment; filename="{file_info["filename"]}"'
+            }
+        )
+
+    # 2. Check Database
+    try:
+        att_id_int = int(attachment_id)
+    except ValueError:
+        raise HTTPException(404, "Attachment not found (invalid ID)")
+
     # Get attachment with node and conversation to verify ownership
     result = await db.execute(
         select(Attachment)
         .join(Node, Attachment.node_id == Node.id)
         .join(Conversation, Node.conversation_id == Conversation.id)
-        .where(Attachment.id == attachment_id)
+        .where(Attachment.id == att_id_int)
         .where(Conversation.user_id == current_user.id)
     )
     attachment = result.scalar_one_or_none()

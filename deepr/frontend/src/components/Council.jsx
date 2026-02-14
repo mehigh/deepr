@@ -84,7 +84,27 @@ const Council = () => {
   };
 
   if (loading) return <div className="p-8 text-center text-slate-400">Loading models...</div>;
-  if (error) return <div className="p-8 text-center text-red-400">Error loading models: {error.message}</div>;
+
+  if (error) {
+    if (error.isMissingKey) {
+      return (
+        <div className="max-w-4xl mx-auto mt-10 p-8 bg-slate-900 border border-slate-700 rounded-lg text-center animate-fade-in">
+          <div className="text-yellow-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-white mb-2">OpenRouter API Key Required</h2>
+          <p className="text-slate-400 mb-6">
+            To use the Council, you need to configure your OpenRouter API Key.
+          </p>
+          <a
+            href="/settings"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition"
+          >
+            Configure API Key
+          </a>
+        </div>
+      );
+    }
+    return <div className="p-8 text-center text-red-400">Error loading models: {error.message}</div>;
+  }
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -199,7 +219,13 @@ const Council = () => {
           {/* New Research Button */}
           <div className="mb-6 flex justify-end">
             <button
-              onClick={() => { setIsResearching(false); setNodes([]); setSubmittedAttachments([]); }}
+              onClick={() => {
+                setIsResearching(false);
+                setNodes([]);
+                setSubmittedAttachments([]);
+                setAttachments([]);
+                setPrompt('');
+              }}
               className="text-sm text-slate-500 hover:text-white transition"
             >
               New Research

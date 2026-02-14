@@ -34,7 +34,7 @@ const DEFAULT_ROLES = [
 ];
 
 const DxO = () => {
-  const { models, loading } = useModels();
+  const { models, loading, error } = useModels();
   const [prompt, setPrompt] = useState('');
   const [roles, setRoles] = useState(DEFAULT_ROLES);
   const [isRunning, setIsRunning] = useState(false);
@@ -157,6 +157,28 @@ const DxO = () => {
     <div className="max-w-6xl mx-auto">
       {!isRunning && nodes.length === 0 ? (
         <div className="animate-fade-in space-y-8">
+          {error && error.isMissingKey && (
+            <div className="max-w-4xl mx-auto mt-0 mb-8 p-6 bg-slate-900 border border-slate-700 rounded-lg text-center">
+              <div className="text-yellow-500 text-3xl mb-2">⚠️</div>
+              <h2 className="text-xl font-bold text-white mb-2">OpenRouter API Key Required</h2>
+              <p className="text-slate-400 mb-4">
+                DxO requires an OpenRouter API Key to function.
+              </p>
+              <a
+                href="/settings"
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
+              >
+                Configure API Key
+              </a>
+            </div>
+          )}
+
+          {error && !error.isMissingKey && (
+            <div className="p-4 mb-6 text-center text-red-400 bg-red-900/20 border border-red-900 rounded-lg">
+              Error loading models: {error.message}
+            </div>
+          )}
+
           <div>
             <h2 className="text-2xl font-bold mb-4">DxO Request</h2>
             <div className="relative mb-4">
@@ -276,7 +298,7 @@ const DxO = () => {
 
           <button
             onClick={handleStart}
-            disabled={!prompt}
+            disabled={!prompt || error}
             className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-4 rounded-lg shadow-lg transform transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Start Diagnostic Orchestration
@@ -286,7 +308,13 @@ const DxO = () => {
         <div className="animate-fade-in">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-slate-200">{prompt}</h2>
-            <button onClick={() => { setIsRunning(false); setNodes([]); setSubmittedAttachments([]); }} className="text-sm text-slate-500 hover:text-white">New Session</button>
+            <button onClick={() => {
+              setIsRunning(false);
+              setNodes([]);
+              setSubmittedAttachments([]);
+              setAttachments([]);
+              setPrompt('');
+            }} className="text-sm text-slate-500 hover:text-white">New Session</button>
           </div>
 
           <div className="mb-6">

@@ -15,9 +15,20 @@ const ModelItem = ({ model, isSelected, onToggle }) => {
         : 'bg-slate-900 border-slate-800 hover:border-slate-700'
         }`}
     >
-      <div className={`w-5 h-5 rounded border flex items-center justify-center mt-1 ${isSelected ? 'bg-blue-600 border-blue-600' : 'border-slate-600'
-        }`}>
-        {isSelected && <Zap size={12} className="text-white" />}
+      <div className="flex flex-col items-center">
+        <div className={`w-5 h-5 rounded border flex items-center justify-center mt-1 ${isSelected ? 'bg-blue-600 border-blue-600' : 'border-slate-600'
+          }`}>
+          {isSelected && <Zap size={12} className="text-white" />}
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
+          className="text-slate-400 hover:text-slate-300 transition-colors mt-2"
+        >
+          {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        </button>
       </div>
       <div className="flex-1">
         <div className="font-semibold text-sm">{model.name}</div>
@@ -36,16 +47,7 @@ const ModelItem = ({ model, isSelected, onToggle }) => {
           </span>
         </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOpen(!isOpen);
-          }}
-          className="flex items-center space-x-2 text-sm text-slate-400 hover:text-slate-300 transition-colors mt-2"
-        >
-          {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          <span className="font-medium">Details</span>
-        </button>
+
 
         {isOpen && (
           <div

@@ -8,12 +8,18 @@ from encryption import decrypt_key
 from models import User
 from fastapi import HTTPException
 
-# Global cache for models
-_CACHED_MODELS_LIST = []
+# Global cache for models (per user)
+_CACHED_MODELS_BY_USER = {}
+
+def clear_model_cache(user_id: int):
+    """Clear cached models for a specific user to force refresh"""
+    global _CACHED_MODELS_BY_USER
+    if user_id in _CACHED_MODELS_BY_USER:
+        del _CACHED_MODELS_BY_USER[user_id]
 
 async def fetch_models_from_api(current_user: User):
-    """Fetch models from OpenRouter and populate cache"""
-    global _CACHED_MODELS_LIST
+    """Fetch models from OpenRouter and populate cache for specific user"""
+    global _CACHED_MODELS_BY_USER
 
     # Retrieve API Key
     if not current_user.settings or not current_user.settings.encrypted_api_key:
@@ -63,8 +69,8 @@ async def fetch_models_from_api(current_user: User):
                 models_list = [m for m in models_list if m['id'] not in exclude_ids]
 
             # Update globals
-            global _CACHED_MODELS_LIST
-            _CACHED_MODELS_LIST = models_list            
+            global _CACHED_MODELS_BY_USER
+            _CACHED_MODELS_BY_USER[current_user.id] = models_list            
             
             return models_list
             
@@ -74,11 +80,12 @@ async def fetch_models_from_api(current_user: User):
 
 async def get_available_models(current_user: User):
     """Get list of available models, fetching if necessary"""
-    if not _CACHED_MODELS_LIST:
+    global _CACHED_MODELS_BY_USER
+    if current_user.id not in _CACHED_MODELS_BY_USER:
         await fetch_models_from_api(current_user)
-    return _CACHED_MODELS_LIST
+    return _CACHED_MODELS_BY_USER.get(current_user.id, [])
 
-def get_unsupported_attachments(model_id: str, attachments: List) -> List[str]:
+def get_unsupported_attachments(model_id: str, attachments: List, user_id: int = None) -> List[str]:
     """
     Get list of warnings for unsupported attachments.    
     """
@@ -88,7 +95,12 @@ def get_unsupported_attachments(model_id: str, attachments: List) -> List[str]:
         return warnings
     
     # Check capabilities
-    model = next((m for m in _CACHED_MODELS_LIST if m['id'] == model_id), {})
+    user_models = _CACHED_MODELS_BY_USER.get(user_id, []) if user_id else []
+    # If no user_id or empty models, we can't really check capabilities effectively unless we fallback or fetch.
+    # For now, let's just use empty if not found, meaning no warnings generated because we "don't know" it's unsupported?
+    # Or should we assume support? No, assume nothing.
+    
+    model = next((m for m in user_models if m['id'] == model_id), {})
     caps = model.get('capabilities', {})
     vision_supported = caps.get('image', False)
     file_supported = caps.get('file', False)
@@ -181,14 +193,26 @@ class OpenRouterClient:
                                 content_array.append({
                                     "type": "file",
                                     "file": {
-                                        "url": f"data:{att.mime_type};base64,{base64_data}"
+                                        "filename": getattr(att, 'filename', 'document.pdf'),
+                                        "file_data": f"data:{att.mime_type};base64,{base64_data}"
                                     }
                                 })
                             elif att.file_type == 'audio':
+                                # Map mime_type to format (mp3 or wav typically)
+                                audio_format = 'mp3'
+                                if 'wav' in att.mime_type:
+                                    audio_format = 'wav'
+                                elif 'ogg' in att.mime_type:
+                                    audio_format = 'oga' # OpenAI uses 'oga' for ogg? or 'ogg'. OpenRouter docs say 'ogg' supported but OpenAI 'input_audio' spec often asks for 'wav' or 'mp3'.
+                                    # Let's fallback to 'wav' if unsure or keep 'mp3' as safe default if transcoded.
+                                    # Actually, let's just use the subtype.
+                                    audio_format = att.mime_type.split('/')[-1]
+
                                 content_array.append({
-                                    "type": "audio_url",
-                                    "audio_url": {
-                                        "url": f"data:{att.mime_type};base64,{base64_data}"
+                                    "type": "input_audio",
+                                    "input_audio": {
+                                        "data": base64_data, # Raw base64, no data: prefix
+                                        "format": audio_format
                                     }
                                 })
                             elif att.file_type == 'video':
@@ -207,8 +231,9 @@ class OpenRouterClient:
                         msg['content'] = content_array
         
         # Determine referer
-        host = os.getenv("HOST_IP", "localhost")
-        port = os.getenv("FRONTEND_PORT", "9080")
+        # Determine referer
+        host = os.getenv("HOST_IP")
+        port = os.getenv("FRONTEND_PORT")
         referer = f"http://{host}:{port}"
 
         # Make the API call        

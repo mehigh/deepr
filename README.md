@@ -2,28 +2,62 @@
 
 DeepR employs a multi-agent "Council" architecture where different AI models take on specific roles to ensure comprehensive and unbiased research.
 
-## Core Agents (DAG Workflow)
+![DeepR Interface](assets/council.png)
+
+## 🚀 Key Features
+
+*   **AI Council Workflow:** Plan -> Research -> Critique -> Synthesis.
+*   **Cognitive Diversity:** Run multiple models simultaneously (e.g., GPT-4o, Claude 3.5 Sonnet, Gemini 1.5 Pro).
+*   **Multimodal Support:** Analyze **Images, PDFs, Audio, and Video** directly within the chat.
+*   **Role-Based Interaction:** Assign a "Chairman" model to lead the synthesis while selecting specific Council Members for research and critique.
+*   **Anonymous Critique:** Blind peer review between models to reduce bias.
+*   **Diagnostic Orchestration (DxO):** A multi-turn debate between specialized agents to refine complex system designs.
+*   **SuperChat:** A powerful chat interface to interact with the Council.
+*   **Secure Configuration:** Encrypted storage for your OpenRouter API Key.
+*   **Auto-Start:** Docker containers configured to restart automatically on system boot.
+
+## 📸 Visual Walkthrough
+
+### 1. The Council (DAG Workflow)
+The standard workflow where a Coordinator plans, Researchers investigate, Critics review, and a Chairman synthesizes the final answer.
+
+![Council Workflow](assets/council.png)
+
+### 2. Diagnostic Orchestration (DxO)
+A specialized panel where agents like "Lead Researcher" and "Critical Reviewer" debate and refine a proposal through multiple iterations.
+
+![DxO Interface](assets/DxO.png)
+
+### 3. SuperChat
+Direct interaction with your Council members. Upload files, ask questions, and get consensus-based answers.
+
+![SuperChat Interface](assets/SuperChat.png)
+
+### 4. Deep Analysis & Attachments
+View detailed breakdowns of each step in the reasoning process, including intermediate outputs and file analysis.
+
+![Deep Analysis](assets/details_and_files_attachment_Synthesis.png)
+
+## 🤖 Core Agents
 
 These agents are used in the standard `DAG` and `Ensemble` workflows.
 
 ### 1. The Coordinator
-- **Role:** Planning & Strategy.
-- **Responsibility:** Receives the user's initial prompt and breaks it down into a structured research plan. It identifies key questions to investigate and assigns them to the Researchers.
-- **Model:** Typically a high-reasoning model (e.g., GPT-4o).
+-   **Role:** Planning & Strategy.
+-   **Responsibility:** Breaks down the user's prompt into a structured research plan.
 
 ### 2. The Council Members (Researchers)
-- **Role:** Execution & Investigation.
-- **Responsibility:** Each member executes the research tasks assigned by the Coordinator. They work in parallel to gather information, analyze data, and generate initial findings.
-- **Diversity:** Users can select multiple different models (e.g., Claude 3 Opus, Llama 3) to ensure cognitive diversity and reduce single-model bias.
+-   **Role:** Execution & Investigation.
+-   **Responsibility:** Execute research tasks in parallel.
+-   **Diversity:** Mix and match models to ensure diverse perspectives.
 
 ### 3. The Critics
-- **Role:** Quality Control & Peer Review.
-- **Responsibility:** They review the findings of the Researchers. The critique process is **blind** (anonymized) to prevent bias based on the identity of the researching model. They point out logical fallacies, missing context, or weak arguments.
+-   **Role:** Quality Control & Peer Review.
+-   **Responsibility:** Blind critique of research findings to identify fallacies or missing context.
 
 ### 4. The Chairman
-- **Role:** Synthesis & Final Decision.
-- **Responsibility:** The Chairman reads the original plan, the research findings, and the critiques. It then synthesizes everything into a final, comprehensive answer for the user.
-- **Nature:** Acts as the final arbiter and voice of the Council.
+-   **Role:** Synthesis & Final Decision.
+-   **Responsibility:** Synthesizes all findings and critiques into a comprehensive final answer.
 
 ## Diagnostic Orchestration (DxO) Agents
 
@@ -72,13 +106,15 @@ Inspired by Satya Nadella's [app demo that uses AI to create decision frameworks
 
 The easiest way to run DeepR is with Docker Compose.
 
-1.  **Prerequisites:** Install Docker and Docker Compose.
+### Prerequisites
+-   Docker Desktop installed and running.
 
-2.  **Configure Environment Variables:**
-    -   Copy `.env.example` to `.env`.
-    -   Edit `.env` and set your IP and ports configuration.
+### Installation
 
-3.  **Run:**
+1.  **Configure Environment:**
+    Copy `.env.example` to `.env` and set your IP (`HOST_IP`) and ports.
+
+2.  **Run:**
     ```bash
     docker compose up --build
     ```

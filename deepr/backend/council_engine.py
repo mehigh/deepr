@@ -87,7 +87,7 @@ class CouncilEngine:
         attachment_filenames = ",".join([att.filename for att in attachments]) if attachments else None
         
         # Check for warnings (non-vision model with images, etc.)
-        warning_list = get_unsupported_attachments(chairman_model, attachments)
+        warning_list = get_unsupported_attachments(chairman_model, attachments, self.user.id)
         
         prompt = f"""
         You are the Coordinator of a research council. 
@@ -143,7 +143,7 @@ class CouncilEngine:
         nodes = []
         for model, content, cost_info in results:
             # Get warnings for this specific model
-            warning_list = get_unsupported_attachments(model, attachments)
+            warning_list = get_unsupported_attachments(model, attachments, self.user.id)
             
             node = await self.create_node(
                 conversation_id, 
@@ -210,7 +210,7 @@ class CouncilEngine:
         nodes = []
         for model, content, cost_info in results:
             # Get warnings for this specific model
-            warning_list = get_unsupported_attachments(model, attachments)
+            warning_list = get_unsupported_attachments(model, attachments, self.user.id)
             
             parent_id = research_nodes[0].parent_id if research_nodes else None
             node = await self.create_node(
@@ -237,7 +237,7 @@ class CouncilEngine:
         attachment_filenames = ",".join([att.filename for att in attachments]) if attachments else None
         
         # Check for warnings
-        warning_list = get_unsupported_attachments(chairman_model, attachments)
+        warning_list = get_unsupported_attachments(chairman_model, attachments, self.user.id)
         
         context = f"Original Plan:\n{plan_node.content}\n\n"
         
@@ -302,7 +302,7 @@ class CouncilEngine:
         nodes = []
         for model, content, cost_info in results:
             # Get warnings for this specific model
-            warning_list = get_unsupported_attachments(model, attachments)
+            warning_list = get_unsupported_attachments(model, attachments, self.user.id)
             
             node = await self.create_node(
                 conversation_id, 
@@ -328,7 +328,7 @@ class CouncilEngine:
         attachment_filenames = ",".join([att.filename for att in attachments]) if attachments else None
         
         # Check for warnings
-        warning_list = get_unsupported_attachments(chairman_model, attachments)
+        warning_list = get_unsupported_attachments(chairman_model, attachments, self.user.id)
         
         context = f"Original Question:\n{root_node.content}\n\n"
         

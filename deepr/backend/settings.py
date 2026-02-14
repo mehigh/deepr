@@ -42,4 +42,7 @@ async def update_settings(
     await db.execute(stmt)
     await db.commit()
     
+    # Force reload of models on next request
+    clear_model_cache(current_user.id)
+    
     return {"status": "ok"}

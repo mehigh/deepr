@@ -32,6 +32,18 @@ target_metadata = Base.metadata
 # ... etc.
 
 
+
+def get_database_url():
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        user = os.getenv("POSTGRES_USER", "postgres")
+        password = os.getenv("POSTGRES_PASSWORD", "postgres")
+        host = os.getenv("HOST_IP", "localhost")
+        port = os.getenv("DB_PORT", "5432")
+        db = os.getenv("POSTGRES_DB", "postgres")
+        url = f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
+    return url
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -44,7 +56,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -60,7 +72,8 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     # Overwrite sqlalchemy.url with env var
     config_section = config.get_section(config.config_ini_section, {})
-    url = os.getenv("DATABASE_URL")
+    url = get_database_url()
+    
     if url:
         config_section["sqlalchemy.url"] = url
 

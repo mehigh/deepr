@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:15-alpine
+    restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -12,6 +13,7 @@ services:
 
   backend:
     build: ./deepr/backend
+    restart: unless-stopped
     volumes:
       - ./deepr/backend:/app
     environment:
@@ -31,6 +33,7 @@ services:
     build:
       context: ./deepr/frontend
       target: builder
+    restart: unless-stopped
     volumes:
       - ./deepr/frontend:/app
       - /app/node_modules
